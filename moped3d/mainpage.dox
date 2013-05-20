@@ -1,0 +1,173 @@
+/**
+\mainpage
+\htmlinclude manifest.html
+
+\b MOPED 
+ is a real-time Object Recognition and Pose Estimation system. It
+recognizes objects from point-based features (e.g. SIFT, SURF) and their
+geometric relationships extracted from rigid 3D models of objects. The global
+MOPED framework requires seven steps to recognize objects:
+
+- 1) Feature extraction
+- 2) Feature matching
+- 3) Feature clustering
+- 4) Hypothesis generation
+- 5) Pose clustering
+- 6) Hypothesis refinement
+- 7) Pose recombination
+
+This code is structured in two modules: first, a ROS-agnostic library called
+\b libmoped \endb, in which all code for the 7-step algorithm
+is implemented; and second, ROS-enabled wrapper code that utilizes libmoped 
+to read images from the network and to publish the detected objects.
+
+\section config MOPED Configuration 
+MOPED is highly configurable and dependent on a number of parameters. The
+framework configuration, including the specific algorithms to run in each step,
+are specified in \b libmoped/src/config.hpp. \endb
+
+\b config.hpp \endb defines a pipeline, and each algorithm is
+executed when the previous algorithm finishes. To insert a new algorithm in the
+pipeline, the following line must be added: pipeline.addAlg( STEP_NAME, new
+ALGORITHM_NAME(parameters));
+
+For example: pipeline.addAlg( "MATCH_SIFT", new MATCH_ANN_CPU( 128, "SIFT", 5.,
+0.85) );
+
+For a new ALGORITHM_NAME(parameters) to be a valid algorithm within the MOPED
+framework, a class must be created for it with a certain structure. See
+\b libmoped/src/ALGORITHM_TEMPLATE.hpp \endb for details.
+
+\b NOTE: \endb The default configuration of MOPED does not show a graphical 
+display, since it is intended to be run from ROS (and all data gathered
+through the published ROS messages). If you want a nice graphical display,
+you need to add the corresponding module to the MOPED pipeline. In particular,
+you need to edit \b config.hpp \endb and uncomment the line:
+\verbatim
+//pipeline.addAlg( "GLOBAL_DISPLAY", new GLOBAL_DISPLAY( 2 ) );
+\endverbatim
+ 
+
+\section multicore MOPED on Multicore machines
+Best performance is achieved if the number of threads in MOPED is the same as the number of cores in your machine. In order to change the maximum number of threads, you just need to change the constant \verbatim #define MAX_THREADS 4 \endverbatim in config.hpp.
+
+\section algorithms Algorithmic choices
+
+Each of these steps can be implemented using several different algorithms.
+Names within brackets represent the default choice. In particular:
+- 1) Feature extraction --> libmoped/src/feat
+	Current algorithms: FEAT_SIFT_CPU, {FEAT_SIFT_GPU}, FEAT_SURF_CPU
+- 2) Feature matching --> libmoped/src/match
+	Current algorithms: MATCH_ANN_CPU, MATCH_BRUTE_CPU, {MATCH_FLANN_CPU}
+- 3) Features clustering --> libmoped/src/cluster
+	Current algorithms: {CLUSTER_MEAN_SHIFT_CPU}
+- 4) Hypothesis generation --> libmoped/src/pose
+	Current algorithms: POSE_RANSAC_GRAD_DIFF_REPROJECTION_CPU,
+POSE_RANSAC_LM_DIFF_CPU, {POSE_RANSAC_LM_DIFF_REPROJECTION_CPU}, POSE_RANSAC_LBFGS_REPROJECTION_CPU
+- 5) Pose clustering --> libmoped/src/filter
+	Current algorithms: {FILTER_PROJECTION_CPU}
+- 6) Hypothesis refinement --> libmoped/src/pose (same as 4)
+- 7) Pose recombination --> libmoped/src/filter (same as 5)
+
+\section pointers Important data structures and code
+- Framework pipeline and algorithm parameters --> libmoped/src/config.hpp
+- Namespace definition (MopedNS), FrameData structure and pipeline execution --> libmoped/src/util.hpp
+- Model- and algorithm-related data structures (Model, rotation, Pt, ...) --> libmoped/include/moped.hpp
+
+
+List of nodes:
+- \b moped2
+
+<!-- START: copy for each node -->
+
+<hr>
+
+\subsection moped2 moped2 
+
+does object recognition from images. See the related package moped-example for
+details on how to launch moped using rosrun or roslaunch.
+
+
+\subsubsection topics ROS topics
+
+Subscribes to:
+- \b "/Image": [sensor_msgs/Image] MOPED requires GRAYSCALE images, or it will
+  not work.
+
+Publishes to:
+- \b "/object_poses": [pr_msgs/ObjPoseList] shows list of objects found in
+  image, with its name, translation and rotation (quaternion) with respect to
+the camera frame.
+
+\subsubsection parameters ROS parameters
+
+Reads the following parameters from the parameter server
+
+- \b "~models_path" : \b [string] Path to object models (.moped.xml).
+- \b "~input_image_topic_name" : \b [string] Define the input image topic name,
+  in case /Image is not wanted.
+- \b "~output_object_list_topic_name" : \b [string] Define the output topic
+  name, in case /object_poses is not wanted.
+- \b "KK_fx" : \b [float] Intrinsic camera parameter (focal distance x). All
+  these parameters are those extracted from Bouguet's Camera Calibration
+  Toolbox for Matlab)
+- \b "KK_fy" : \b [float] Intrinsic camera parameter (focal distance y)
+- \b "KK_cx" : \b [float] Intrinsic camera parameter (camera center x)
+- \b "KK_cy" : \b [float] Intrinsic camera parameter (camera center y)
+- \b "kc_k1" : \b [float] non-linear camera parameters (set to 0 if image is
+  already undistorted)
+- \b "kc_k2" : \b [float] (see kc_k1)
+- \b "kc_p1" : \b [float] (see kc_k1)
+- \b "kc_p2" : \b [float] (see kc_k1)
+
+
+<!-- END: copy for each node -->
+
+\section install Installation of MOPED
+
+The MOPED code is all contained within the ROS package moped2. On top of that,
+you will need to download and install the example object models that we have already
+built. In order to do so, use the script \verbatim download_models.sh
+\endverbatim.
+Depending on your configuration, you *might* have to mess around with your
+X-server permissions in order to be able to use the GPU code over ssh. If you
+try MOPED and receive only \b Found 0 Objects \endb messages, try
+using FEAT_SIFT_CPU instead of FEAT_SIFT_GPU (in config.hpp) and see if there
+is any difference. If the CPU version works, it is likely that your X-server
+has permissions issues.
+
+\section compile Compilation of MOPED
+Compiling MOPED is very straightforward. Just type \verbatim make \endverbatim
+in the moped2 folder.
+Warning: Sometimes, when recompiling the ROS node, the moped2 library does not
+get recompiled, or the library libmoped.a does not get updated. When changing
+code within libmoped, it is sometimes necessary to do:
+
+\verbatim
+$ ./libmoped/make clean
+$ ./libmoped/make
+$ ./make clean
+$ ./make 
+\endverbatim
+
+\section commandline Other tools
+
+An additional package called moped-example is included with MOPED. This offers
+an example on how to use MOPED with other ROS nodes. In particular, the package
+\b imagesender \endb sends images through the network from a list
+of files. You can download imagesender and moped-example from the same
+repository that you downloaded MOPED from.
+
+\section modeling MOPED Modeling
+If you want to generate your own models for MOPED, look for the folder 'modeling'
+within moped2. There is a tutorial called 'modeling.dox' that you should follow.
+
+\subsubsection Usage
+\verbatim
+$ ./roslaunch moped-example.launch
+\endverbatim
+
+
+Copyright: Carnegie Mellon University and Intel Corporation
+Author: Alvaro Collet (acollet@cs.cmu.edu)
+*/

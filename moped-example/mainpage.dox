@@ -1,0 +1,14 @@
+/**
+\mainpage
+\htmlinclude manifest.html
+
+\b moped-example is an example program to run MOPED with ROS 
+
+Just type 'roslaunch moped-example' to execute. This program will send 
+a set of 10 test images to MOPED and process them. You should see a 
+graphical interface that shows the recognized objects within each image.
+
+Copyright: Carnegie Mellon University and Intel Corporation
+Author: Alvaro Collet (acollet@cs.cmu.edu)
+
+*/

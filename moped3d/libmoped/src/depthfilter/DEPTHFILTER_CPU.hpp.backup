@@ -1,0 +1,251 @@
+/*
+ * David Fouhey
+ * Depthfilter
+ */
+
+#pragma once
+
+#include <math.h>
+
+#define DEBUG 0
+
+
+namespace MopedNS {
+
+	class DEPTHFILTER_CPU: public MopedAlg {
+            int PatchSize;
+            Float Density;
+            int ToFilter;
+
+	    public:
+
+        DEPTHFILTER_CPU(int PatchSize, Float Density, int ToFilter): PatchSize(PatchSize), Density(Density), ToFilter(ToFilter) { }
+		
+		void getConfig( map<string,string> &config ) const {
+            GET_CONFIG( PatchSize );
+            GET_CONFIG( Density );
+            GET_CONFIG( ToFilter );
+		}
+			
+		void setConfig( map<string,string> &config ) {
+            SET_CONFIG( PatchSize ); 
+            SET_CONFIG( Density ); 
+            SET_CONFIG( ToFilter ); 
+		}
+
+        /* \brief Project a point into the world.
+         */
+        inline void projectPoint(Float u, Float v, Float depth, Pt<4> K, Pt<3> &ret){
+            Float x = (u - K[2]) / K[0],
+                  y = (v - K[3]) / K[1],
+                  z = 1.0;
+            Float ratio = depth / sqrt(x*x+y*y+z*z);
+            ret.init(x*ratio, y*ratio, z*ratio);
+        }
+
+        /* \brief Get the area of a rectangle projected from the image plane at 
+         * the given depth.
+         *
+         * Compute the area of the projection of quadrilateral (x0,y0) <-> (x1,y1)
+         * from the image plane into the world at the given depth. Requires the 
+         * depthmap for camera parameters. 
+         */
+        Float getArea(Pt<4> K, int x0, int y0, int x1, int y1, Float depth){
+            Pt<3> quadCorners[4];
+            /* project the 3 corners of the quadrilateral */
+            projectPoint(x0, y0, depth, K, quadCorners[0]);
+            projectPoint(x0, y1, depth, K, quadCorners[1]);
+            projectPoint(x1, y0, depth, K, quadCorners[2]);
+            Float w = quadCorners[0].euclDist(quadCorners[2]),
+                  h = quadCorners[0].euclDist(quadCorners[1]);
+            return w*h; 
+        }
+
+        Float clamp(Float v, Float minVal, Float maxVal){
+            if(v < minVal){
+                return minVal;
+            } else if(v > maxVal){
+                return maxVal;
+            }
+            return v; 
+        }
+
+		void process( FrameData &frameData ) {
+            if(!ToFilter){
+                return; 
+            }
+
+            /* If we don't have at least two images, then return and don't bother
+             * looking for the depthmap */
+            if(frameData.images.size() < 2){
+                return; 
+            } 
+    
+            SP_Image depthmap;
+            for(int i = 0; i < (int) frameData.images.size(); i++){
+                SP_Image image = frameData.images[i];
+                if(image->imageType == IMAGE_TYPE_DEPTH_MAP){
+                    depthmap = image;
+                }
+            }
+
+            #if DEBUG 
+                SP_Image grayscale;
+
+                for(int i = 0; i < (int) frameData.images.size(); i++){
+                    SP_Image image = frameData.images[i];
+                    if(image->imageType == IMAGE_TYPE_GRAY_IMAGE){
+                        grayscale = image;
+                    }
+                }
+            #endif
+
+
+            /* Divide the image into patches */
+
+            int w = depthmap->width, h = depthmap->height;
+            /* if the width or height can't be cleanly divided, we'll just add 
+             * an extra patch to the image */
+            int pw = w / PatchSize + (w % PatchSize == 0 ? 0 : 1),
+                ph = h / PatchSize + (h % PatchSize == 0 ? 0 : 1);
+
+            /* For counting the minimum depth in the patch */
+            Float *minDepthMap = new Float[pw*ph];
+            /* the number of pixels in a patch; this is not constant if the 
+             * patch size doesn't divide the image width 
+             */
+            Float *sizeMap = new Float[pw*ph];
+
+            for(int py = 0; py < ph; py++){
+                for(int px = 0; px < pw; px++){
+                    minDepthMap[py*pw+px] = 1e10;
+                }
+            }
+
+            Float count = 0;
+            for(int y = 0; y < h; y++){
+                for(int x = 0; x < w; x++){
+                    if(depthmap->getDepth(x,y) < 1e-4){
+                        count += 1;
+                    }
+                    int px = x / PatchSize, py = y / PatchSize;
+                    /* update the minimum depth */
+                                minDepthMap[py*pw+px] = min(minDepthMap[py*pw+px], depthmap->getDepth(x,y));
+                }
+            }
+        
+            /* compute the size of the patch projected into the world at the 
+             * relevant depth */
+            for(int py = 0; py < ph; py++){
+                for(int px = 0; px < pw; px++){
+                    int x0 = px*PatchSize, x1 = min((px+1)*PatchSize, depthmap->width),
+                        y0 = py*PatchSize, y1 = min((py+1)*PatchSize, depthmap->width);
+                    /* Get the area by projecting the patch into the world at the 
+                     * minimum depth 
+                     */
+                    sizeMap[py*pw+px] = getArea(depthmap->intrinsicLinearCalibration, 
+                                                x0, y0, x1, y1, 
+                                                minDepthMap[py*pw+px]);
+                }
+            }
+
+            #if DEBUG 
+                IplImage *copyImage = gsToIplImage(grayscale);
+                IplImage *renderImage = cvCreateImage(cvSize(depthmap->width, depthmap->height), IPL_DEPTH_8U, 3);
+                cvCvtColor(copyImage, renderImage, CV_GRAY2RGB);
+            #endif
+
+
+            /* For counting the number of features in each patch; this is
+             * also the density map */
+            Float *countMap = new Float[pw*ph];
+            for(int i = 0; i < pw*ph; i++){
+                countMap[i] = 0.0;
+            }
+            
+            vector< FrameData::DetectedFeature > &corresp = frameData.detectedFeatures["SIFT"];
+			
+			
+			for( int i=0; i<(int)corresp.size(); i++)  {
+                Pt<2> location = corresp[i].coord2D;
+                int px = ((int) location[0]) / PatchSize, py = ((int) location[1]) / PatchSize;
+                countMap[py*pw+px] += 1.0 / sizeMap[py*pw+px];
+            }
+
+            /* Minimum density in cm^2 -> in m^2 */
+            Float filter = Density*100*100;
+
+            #if DEBUG  
+                /* save a rendering */
+                IplImage *modelImage = cvCreateImage(cvGetSize(renderImage), IPL_DEPTH_8U, 3);
+
+                /* draw the density */
+                Float maxDensity = -1;
+                for(int i = 0; i < pw*ph; i++){
+                    if(countMap[i] > maxDensity){
+                        maxDensity = countMap[i];
+                    }
+                }
+
+                cerr << "Maximum density: " << maxDensity;
+                /* 10 features / cm^2 */
+                maxDensity = 10*(100*100);
+
+                for(int y = 0; y < h; y++){
+                    for(int x = 0; x < w; x++){
+                        unsigned char *pix = &(CV_IMAGE_ELEM(modelImage, unsigned char, y, x*3));
+                        Float renderValue = countMap[(y / PatchSize)*pw+(x / PatchSize)] / maxDensity;
+                        Float vx4 = 4*renderValue;
+                        pix[2] = (unsigned char) clamp((min(vx4-1.5, 4.5-vx4)*255), 0, 255);
+                        pix[1] = (unsigned char) clamp((min(vx4-0.5, 3.5-vx4)*255), 0, 255);
+                        pix[0] = (unsigned char) clamp((min(vx4+0.5, 2.5-vx4)*255), 0, 255);
+                    }
+                }
+
+                for(int py = 0; py < ph; py++){
+                    for(int px = 0; px < pw; px++){
+                        Float value = countMap[py*pw+px];
+                        int x0 = px*PatchSize, x1 = min((px+1)*PatchSize, depthmap->width),
+                            y0 = py*PatchSize, y1 = min((py+1)*PatchSize, depthmap->width);
+                        if(value < filter){
+                            int offset = 4;
+                            cvLine(modelImage, cvPoint(x0+offset,y0+offset), cvPoint(x1-offset,y1-offset), CV_RGB(0,0,0));
+                            cvLine(modelImage, cvPoint(x1-offset,y0+offset), cvPoint(x0+offset,y1-offset), CV_RGB(0,0,0));
+                            cvLine(renderImage, cvPoint(x0+offset,y0+offset), cvPoint(x1-offset,y1-offset), CV_RGB(0,0,0));
+                            cvLine(renderImage, cvPoint(x1-offset,y0+offset), cvPoint(x0+offset,y1-offset), CV_RGB(0,0,0));
+                        }
+                    }
+                }
+            #endif
+
+            vector< FrameData::DetectedFeature > newCorresp;
+
+			for( int i=0; i<(int)corresp.size(); i++)  {
+                Pt<2> location = corresp[i].coord2D;
+                int ix = (int) location[0], iy = (int) location[1];
+                int px = ix / PatchSize, py = iy / PatchSize;
+                #if DEBUG
+                    cvLine(modelImage, cvPoint(ix-5, iy), cvPoint(ix+5, iy), CV_RGB(255,255,255));
+                    cvLine(modelImage, cvPoint(ix, iy-5), cvPoint(ix, iy+5), CV_RGB(255,255,255));
+                #endif 
+                if(countMap[py*pw+px] > filter){
+                    newCorresp.push_back(corresp[i]);
+                }
+            }
+
+            frameData.detectedFeatures["SIFT"] = newCorresp;
+
+            #if DEBUG
+                cvAddWeighted(renderImage, 0.5, modelImage, 0.5, 0.0, modelImage); 
+                int start = depthmap->name.rfind("/")+1;
+                string basename = depthmap->name.substr(start);
+                cvSaveImage((basename+"FEAT.png").c_str(), modelImage);
+            #endif
+
+            delete countMap;
+            delete sizeMap;
+            delete minDepthMap;
+        }
+    };
+}
+

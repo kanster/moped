@@ -1,0 +1,6 @@
+sudo aptitude install libcv-dev 
+
+for GPU:
+sudo aptitude install libglew-dev libdevil-dev
+
+

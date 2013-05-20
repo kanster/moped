@@ -1,0 +1,3 @@
+- builder: doxygen
+  file_patterns: '*.c *.cpp *.cc *.hh *.h *.hpp *.dox'
+  exclude_patterns: '*/libs/*'

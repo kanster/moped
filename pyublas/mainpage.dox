@@ -1,0 +1,6 @@
+/**
+\mainpage
+\htmlinclude manifest.html
+
+\b ROS Wrapper for PyUblas, a library for faster Boost::Python interaction with no data copying
+

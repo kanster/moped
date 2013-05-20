@@ -1,0 +1,6 @@
+/**
+\mainpage
+\htmlinclude manifest.html
+
+\b meanshiftpy is a set of python bindings for meanshift
+

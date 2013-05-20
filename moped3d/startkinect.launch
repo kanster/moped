@@ -1,0 +1,46 @@
+<launch>
+ 
+  <param name="display" type="int" value="0"/>
+  <param name="mode" value="MODE_1024x768_MONO"/>
+  
+  <param name="framerate" type="double" value="15"/>
+ 
+  <param name="RGB_KK_fx" type="double" value="1050.0"/>
+  <param name="RGB_KK_fy" type="double" value="1050.0"/>
+  <param name="RGB_KK_cx" type="double" value="639.5"/>
+  <param name="RGB_KK_cy" type="double" value="479.5"/>
+  <param name="RGB_kc_k1" type="double" value="0"/>
+  <param name="RGB_kc_k2" type="double" value="0"/>
+  <param name="RGB_kc_p1" type="double" value="0"/>
+  <param name="RGB_kc_p2" type="double" value="0"/>
+
+  <param name="DEPTH_KK_fx" type="double" value="1050.00034"/>
+  <param name="DEPTH_KK_fy" type="double" value="1050.00059"/>
+  <param name="DEPTH_KK_cx" type="double" value="639.015793"/>
+  <param name="DEPTH_KK_cy" type="double" value="479.015972"/>
+  <param name="DEPTH_kc_k1" type="double" value="0"/>
+  <param name="DEPTH_kc_k2" type="double" value="0"/>
+  <param name="DEPTH_kc_p1" type="double" value="0"/>
+  <param name="DEPTH_kc_p2" type="double" value="0"/>
+
+ 
+  <!-- <param name="brightness" type="double" value="1"/> -->
+  <!-- <param name="gain" type="double" value="600"/> -->
+  <!-- <param name="shutter" type="double" value="256"/> -->
+  <!-- <param name="contrast" type="double" value="1463"/> -->
+ 
+  <param name="compression" type="str" value="jpeg"/>  
+
+
+  <node name="kinectMoped" cwd="node" pkg="moped-rgbd" type="kinectMoped" respawn="false" />
+  
+  <!-- Internal parameters of MOPED -->
+  <param name="input_image_topic_name" type="str" value="Image" />
+  <param name="output_object_list_topic_name" type="str" value="camera_poses" />
+  <param name="models_path" type="str" value="$(find moped-rgbd)/models" />
+
+  <include file="$(find openni_camera)/launch/openni_node.launch"/>
+  <param name="/openni_node1/image_mode" value="1"/>
+
+
+</launch>

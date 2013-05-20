@@ -1,0 +1,23 @@
+<package>
+  <description brief="imagesender">
+
+     Simple image sender from files. Read images from disk and publish Image and
+     CameraInfo data.
+     
+     * imagesender.py - Read image name in images list, send image through the network, and wait until images list is updated.
+     * imagesenderlist.py - Read list of images and send them all through the network.
+
+  </description>
+  <author>Alvaro Collet</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url></url>
+
+  <depend package="rospy"/>
+  <depend package="opencv2"/>
+  <depend package="cv_bridge"/>
+  <depend package="sensor_msgs"/>
+  <depend package="std_msgs"/>
+</package>
+
+

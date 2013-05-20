@@ -1,0 +1,20 @@
+<launch>
+
+ <machine name="moped" address="localhost"  default="false" timeout="30"/>
+ <machine name="imagesender" address="localhost"  default="false" timeout="30"/>
+
+<!-- Send images through ROS on topic /moped/Image to be processed by MOPED -->
+ <group>
+   <remap from="Image" to="/moped/Image"/>
+   <remap from="Image/compressed" to="/moped/Image/compressed"/>
+
+     <include file="_launch.imagesenderlist"/>
+ </group>
+
+ <!-- Launch MOPED -->
+ <group>
+	 <remap from="/Image" to="/moped/Image"/>	 
+   <include file="_launch.moped2"/>
+ </group>
+
+</launch>

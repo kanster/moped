@@ -1,0 +1,18 @@
+<package>
+  <description brief="pyublas">
+
+    PyUblas  wrapper for ROS.
+
+  </description>
+  <author>Original PyUblas: Andreas Klockner. ROS Wrapper: Alvaro Collet </author>
+  <license>Unknown</license>
+  <review status="unreviewed" notes=""/>
+  <url></url>
+
+  <export>
+    <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/pyublas" />
+    <python path="${prefix}"/>
+  </export>
+</package>
+
+

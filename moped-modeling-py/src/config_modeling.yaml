@@ -1,0 +1,3 @@
+{cam_file: ../cam_examples/cam_sx10_1600.yaml,
+  img_dir: ../examples/rice_tuscan, options_file: ./options_modeling.yaml,
+  out_dir: ../examples/model_tuscan, output_xml_file: ../examples/tuscan.moped.xml}

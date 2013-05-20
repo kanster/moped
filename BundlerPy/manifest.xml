@@ -1,0 +1,16 @@
+<package>
+  <description brief="BundlerPy">
+
+     Bundler binding for Python. This package does not have a ROS interface, but it's useful for dependency resolution, to include Bundler in your project.
+
+  </description>
+  <author>Alvaro Collet</author>
+  <license>GPL</license>
+  <review status="unreviewed" notes=""/>
+  
+  <export>
+    <python path="${prefix}"/>
+  </export>
+</package>
+
+

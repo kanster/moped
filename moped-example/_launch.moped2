@@ -1,0 +1,14 @@
+<launch>
+
+  <node machine="moped" cwd="node" pkg="moped2" type="moped2" name="moped2" respawn="true" >
+     <param name="display" type="int" value="1"/>
+ 
+    <!-- Internal parameters of MOPED -->
+    <param name="input_image_topic_name" type="str" value="Image" />
+    <param name="output_object_list_topic_name" type="str" value="camera_poses" />
+    <param name="models_path" type="str" value="$(find moped2)/models" />
+
+  </node>
+
+</launch>
+

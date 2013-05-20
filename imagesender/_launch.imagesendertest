@@ -1,0 +1,26 @@
+<launch>
+
+  <param name="KK_fx" type="double" value="700"/>
+  <param name="KK_fy" type="double" value="700"/>
+  <param name="KK_cx" type="double" value="400"/>
+  <param name="KK_cy" type="double" value="300"/>
+  <param name="kc_k1" type="double" value="0"/>
+  <param name="kc_k2" type="double" value="0"/>
+  <param name="kc_p1" type="double" value="0"/>
+  <param name="kc_p2" type="double" value="0"/>
+  <param name="compression" type="str" value="jpeg"/>
+  <param name="frame_id" type="string" value="objdet_cam"/>
+  <param name="imgmsg_type" type="string" value="bgr8"/>
+  
+  <!-- Usage:
+       imagesender.py <FOLDER_OF_IMAGES> <LIST_OF_IMAGES_TO_SEND>
+   --> 
+ 
+  <node machine="imagesender" pkg="imagesender" 
+	type="imagesender.py" name="imagesender.py" 
+	respawn="true" args="$(find imagesender)/test checkfile.txt" cwd="node">
+
+     <env name="ROS_LOG_DIR" value="/var/run/roslogs"/>
+  </node>
+
+</launch>

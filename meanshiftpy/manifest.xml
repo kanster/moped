@@ -1,0 +1,19 @@
+<package>
+  <description brief="meanshiftpy">
+
+     Meanshift bindings for Python. This package does not have a ROS interface, but it's useful for dependency resolution, to include meanshift in your project.
+
+  </description>
+  <author>Alvaro Collet</author>
+  <license>GPL</license>
+  <review status="unreviewed" notes=""/>
+  
+  <export>
+    <python path="${prefix}/src:${prefix}/lib"/>
+  </export>
+
+  <depend package="pyublas" />
+
+</package>
+
+

@@ -1,0 +1,6 @@
+glew:
+  ubuntu: libglew1.5
+glew-dev:
+  ubuntu: libglew1.5-dev
+devil-dev:
+  ubuntu: libdevil-dev

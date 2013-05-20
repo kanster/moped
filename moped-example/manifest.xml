@@ -1,0 +1,20 @@
+<package>
+  <description brief="moped-example">
+
+    Example of usage of MOPED and ROS in a test dataset.
+
+  </description>
+  <author>Alvaro Collet</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url></url>
+
+  <depend package="rospy"/>
+  <depend package="opencv2"/>
+  <depend package="cv_bridge"/>
+  <depend package="sensor_msgs"/>
+  <depend package="std_msgs"/>
+  <depend package="imagesender"/>
+</package>
+
+

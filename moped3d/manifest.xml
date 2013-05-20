@@ -1,0 +1,33 @@
+<package>
+  <description brief="moped-rgbd">
+  Fast pose estimation and object recognition system from a single RGBD image, in C++. Original code from Alvaro Collet, magically optimized and speeded up by Manuel Martinez, and extended to RGBD by David Fouhey
+  </description>
+  <author>David Fouhey (dfouhey@cs.cmu.edu), Alvaro Collet (alvaro.collet@gmail.com), Manuel Martinez (salutte@gmail.com), Siddhartha Srinivasa (siddhartha.srinivasa@intel.com)</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://personalrobotics.intel-research.net/pittsburgh</url>
+
+  <depend package="roscpp"/>
+  <depend package="sensor_msgs"/>
+  <depend package="pr_msgs"/>
+  <depend package="opencv2"/>
+  <depend package="cv_bridge"/>
+  <depend package="image_transport"/>
+  <versioncontrol type="svn"
+	  url="https://svn.pittsburgh.intel-research.net/repos/pr/public/moped2"/>
+  <rosdep name="libglew-dev"/>
+  <rosdep name="libdevil-dev"/>
+  <rosdep name="opencv2"/>  
+  <platform os="ubuntu" version="8.04"/>
+  <platform os="ubuntu" version="8.10"/>
+  <platform os="ubuntu" version="9.04"/>
+  <platform os="ubuntu" version="9.10"/>
+  <platform os="ubuntu" version="10.04"/>
+
+  <export>
+    <rosdoc config="rosdoc.yaml"/>
+  </export>
+
+</package>
+
+

@@ -1,0 +1,138 @@
+/**
+\mainpage
+\htmlinclude manifest.html
+
+\b MOPED Modeling 
+ is a modeling tool for the object recognition system MOPED.
+It consists of a set of matlab scripts that generate models from pictures and
+exports them in the XML format that MOPED requires.
+
+\b Software installation
+Before starting to generate your object models, you need to compile some tools.
+First, uncompress and compile Bundler (Noah Snavely). 
+\verbatim
+    $ cd moped2/modeling/bundler
+    $ tar -xzf bundler.tar.gz
+    $ make
+\endverbatim
+
+In the folder moped2/modeling/bundler, you will need to change:
+
+- Edit RunBundler.sh and change BASE_PATH to your bundler folder.
+- Edit bin/extract_focal.pl and change $BASE_PATH to your bundler folder.
+- Edit bin/ToSift.sh and change BASE_PATH to your bundler folder.
+
+You also need to compile a couple of Matlab MEX libraries. In order to do so, open
+Matlab and type:
+\verbatim
+    $ matlab
+    > cd moped2/modeling
+    > compile_all
+\endverbatim 
+
+\b How to create a new model from scratch
+
+NOTE: '>' denotes a matlab command. Substitute OBJECT_NAME for whatever name you want
+NOTE 2: OBJECT_NAME must be a \b UNIQUE \endb model name, otherwise moped2 will complain.
+NOTE 3: If any of these commands are unclear, type 'help COMMAND' in matlab to
+display usage details and help for each function.
+NOTE 4: Backing up your pictures is recommended, as they might be modified during the 
+model generation process.
+
+- 1) Take pictures all around the object. Usually, between 40 and 60 are
+  enough, but you should experiment.
+
+- 2) Save pictures in folder of your choice (e.g. '/home/user/objects/OBJECT_NAME')
+
+- 3) Open matlab
+
+- 4) Go to the modeling folder and add it to the path, i.e.:
+\verbatim    
+    > cd moped2/modeling; %(or whatever folder the modeling software is in) 
+    > addpath(pwd);
+\endverbatim
+
+- 6) Load camera parameters, in the format provided  by Bouguet's Camera
+  Calibration Toolbox for Matlab (make sure same format as the example file is
+  used!). Example: 
+\verbatim 
+    > load moped2/modeling/example_cam.mat; % Loads variables K, KK, kc (camera distortion) 
+\endverbatim
+
+- 7) Initialize variables (the images folder and the output folder should be
+  different!):
+\verbatim
+    > img_dir = '/home/user/objects/OBJECT_NAME'; % CAREFUL: NEED FULL PATH (no ~)
+    > out_dir = '/home/user/objects/OBJECT_MODEL_NAME'; % CAREFUL: NEED FULL PATH (no ~)
+\endverbatim
+
+- 8) Undistort the images:
+\verbatim   
+    > imundistort_folder(img_dir, KK, kc); 
+\endverbatim
+
+- 9) Segment the object in all images
+\verbatim
+    > draw_mask(img_dir); % left click adds anchor point, right click goes to next image
+\endverbatim
+
+- 10) Go to images folder
+\verbatim   
+    > cd (img_dir); 
+\endverbatim
+
+- 11) Run modeling software. Remember to put your image resolution in [width height] format.
+\verbatim   > model = sfm_bundler(OBJECT_NAME, img_dir, out_dir, KK, zeros(5,1), [1600 1200]);
+
+- 12) Verify if model looks reasonable (look if the point cloud resembles the object shape)
+\verbatim
+    > sfm_view(model, 'all');
+\endverbatim
+
+- 13) If it looks good, save model (important!). If not, ask for help!
+\verbatim
+    > save (['model_' OBJECT_NAME '.mat'], 'model');
+\endverbatim
+
+- 14) [Optional] If you care about object localization in the real world, you
+  should fix the object scale and coordinate frame so that they are e.g. at the
+center of the object. My recommendation is to first place the coordinate frame
+correctly (and with Z axis pointing up) and then fix the scale. For the scale,
+you need to measure your object (in meters!), and then use the scale bar within
+our software until the side of your object measures the same in the screen as
+the one you have measured (again, all units are in meters). To run our scaling tool, type:
+\verbatim
+    > sfm_alignment_gui(model);
+\endverbatim
+
+- 15) Export model to XML format in the models folder
+\verbatim
+    > sfm_export_xml('moped2/models/OBJECT_NAME.moped.xml', model);
+\endverbatim
+
+\section objects Which objects to model?
+MOPED2 uses SIFT features and geometric reasoning to recognize objects. This
+means that you need be able to generate a sparse 3D model with SIFT features
+for your object. The actual model generation uses the Bundler software from
+Noah Snavely, that does structure from motion on the set of images. We mask
+each image to delete points belonging to the background. Finding such types of
+objects is sometimes not that easy. Textured objects with some sharp edges
+(e.g. not too small text) are usually best. You can find some examples of the
+kind of objects that we model in the modeling/examples folder.
+
+If you run the modeling stage on an object and it does not work, you should try
+again with better resolution or more textured images. A *very* important trick
+is to use something with A LOT of texture as the ground plane (e.g. some old
+poster from a conference). That will ensure that the camera positions are
+registered accurately (again, see examples in the modeling/examples folder).
+
+Sometimes, your objects will have two textured faces and be completely white
+otherwise. If that is the case, you also have the option of creating two
+independent models (on for each face) and then place their coordinate frame in
+the same position for both of them. That will ensure that the same object is
+detected in the same position, despite having two separate models for it.
+
+
+Copyright: Carnegie Mellon University & Intel Corporation
+Author: Alvaro Collet (acollet@cs.cmu.edu)
+*/

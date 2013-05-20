@@ -1,0 +1,32 @@
+<launch>
+ 
+  <param name="display" type="int" value="0"/>
+  <param name="mode" value="MODE_1024x768_MONO"/>
+  
+  <param name="framerate" type="double" value="15"/>
+ 
+  <param name="KK_fx" type="double" value="811.4229145445365248"/>
+  <param name="KK_fy" type="double" value="811.5323254850802641"/>
+  <param name="KK_cx" type="double" value="307.4172213949412367"/>
+  <param name="KK_cy" type="double" value="248.9196317191228616"/>
+  <param name="kc_k1" type="double" value="-0.1750410455370379"/>
+  <param name="kc_k2" type="double" value="0.1772454989736693"/>
+  <param name="kc_p1" type="double" value="-2.2205897213455503e-04"/>
+  <param name="kc_p2" type="double" value="-2.4827840641630848e-04"/>
+ 
+  <!-- <param name="brightness" type="double" value="1"/> -->
+  <!-- <param name="gain" type="double" value="600"/> -->
+  <!-- <param name="shutter" type="double" value="256"/> -->
+  <!-- <param name="contrast" type="double" value="1463"/> -->
+ 
+  <param name="compression" type="str" value="jpeg"/>  
+
+  <node pkg="cameradc1394" type="cameradc1394" respawn="true" />
+
+  <node name="moped2" cwd="node" pkg="moped2" type="moped2" respawn="false" />
+  
+  <!-- Internal parameters of MOPED -->
+  <param name="input_image_topic_name" type="str" value="Image" />
+  <param name="output_object_list_topic_name" type="str" value="camera_poses" />
+  <param name="models_path" type="str" value="$(find moped2)/models" />
+</launch>

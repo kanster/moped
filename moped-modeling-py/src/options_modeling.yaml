@@ -1,0 +1,4 @@
+descriptors: {SIFT: siftpy}
+mask_suffix: '.mat'
+min_matched_views: 5 
+reproj_th: 2.5

@@ -1,0 +1,26 @@
+<launch>
+
+ <!-- MOPED reads these camera parameters. These need to be calibrated for each
+      individual camera -->
+ 
+  <param name="KK_fx" type="double" value="1000"/>
+  <param name="KK_fy" type="double" value="1000"/>
+  <param name="KK_cx" type="double" value="640"/>
+  <param name="KK_cy" type="double" value="360"/>
+  <param name="kc_k1" type="double" value="0"/>
+  <param name="kc_k2" type="double" value="0"/>
+  <param name="kc_p1" type="double" value="0"/>
+  <param name="kc_p2" type="double" value="0"/>
+  <param name="compression" type="str" value="jpeg"/>
+  <param name="frame_id" type="string" value="objdet_cam"/>
+ <!-- Refresh rate in frames per second -->
+  <param name="refresh_rate" type="double" value="0.2"/>
+  
+  <node machine="imagesender" pkg="imagesender" 
+	type="imagesenderlist.py" name="imagesenderlist" 
+	respawn="true" args="$(find moped-example)/test images_list.txt" 
+        cwd="node">
+
+  </node>
+
+</launch>

@@ -1,0 +1,8 @@
+BOOST_INC_DIR = []
+BOOST_LIB_DIR = []
+BOOST_COMPILER = 'gcc44'
+BOOST_PYTHON_LIBNAME = ['boost_python-mt-py26']
+WITH_SPARSE_WRAPPERS = False
+USE_ITERATORS = False
+CXXFLAGS = ['-Wno-sign-compare']
+LDFLAGS = []

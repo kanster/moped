@@ -1,0 +1,16 @@
+<package>
+  <description brief="moped-modeling">
+
+     Moped modeling, in python. This package does not have a ROS interface, but using it as a package is useful to find these files easily in python.
+  
+     License is GPL due to stickiness of GPL. Bundler, which we use, is GPL, so our software must be GPL by extension.
+  </description>
+  <author>Alvaro Collet</author>
+  <license>GPL</license>
+  <review status="unreviewed" notes=""/>
+
+  <depend package="opencv2"/>
+  <depend package="meanshiftpy"/>
+  <depend package="BundlerPy"/>
+</package>
+
