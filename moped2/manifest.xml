@@ -10,7 +10,7 @@
   <depend package="roscpp"/>
   <depend package="sensor_msgs"/>
   <depend package="pr_msgs"/>
-  <depend package="opencv2"/>
+  <!--depend package="opencv2"/-->
   <depend package="cv_bridge"/>
   <depend package="image_transport"/>
 
@@ -33,5 +33,3 @@
   </export>
 
 </package>
-
-

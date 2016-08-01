@@ -2,11 +2,18 @@
 # Copyright: Carnegie Mellon University and Intel Corporation
 # Author: Alvaro Collet (acollet@cs.cmu.edu)
 
-OPENCV_DIR=`rospack find -q opencv2`
-OPENCV_INCLUDE_DIR=`rospack find -q opencv2`/opencv/include
+#OPENCV_DIR=`rospack find -q opencv2`
+#OPENCV_INCLUDE_DIR=`rospack find -q opencv2`/opencv/include
+#OPENCV_LIB_DIR=`rospack find -q opencv2`/opencv/lib
+#OPENCV_CFLAGS=`rospack export --lang=cpp --attrib=cflags opencv2`
+#OPENCV_LFLAGS=`rospack export --lang=cpp --attrib=lflags opencv2`
+
+#OPENCV_DIR=`pkg-config find -q opencv2`
+OPENCV_INCLUDE_DIR=`pkg-config --cflags opencv`
 OPENCV_LIB_DIR=`rospack find -q opencv2`/opencv/lib
 OPENCV_CFLAGS=`rospack export --lang=cpp --attrib=cflags opencv2`
 OPENCV_LFLAGS=`rospack export --lang=cpp --attrib=lflags opencv2`
+
 
 echo -n "prefix=${OPENCV_DIR}\n\
 libdir=${OPENCV_INCLUDE_DIR}\n\

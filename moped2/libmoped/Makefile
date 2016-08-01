@@ -5,8 +5,8 @@ INCLUDES    += -Ilibs/libsiftfast-1.1-src
 SLIBS       += libs/libsiftfast-1.1-src/libsiftfast.a
 
 # USING SIFTGPU
-INCLUDES    += -Ilibs/SiftGPU/
-SLIBS       += libs/SiftGPU/libsiftgpu.a
+#INCLUDES    += -Ilibs/SiftGPU/
+#SLIBS       += libs/SiftGPU/libsiftgpu.a
 
 # USING LEVMAR
 INCLUDES    += -Ilibs/levmar-2.4
@@ -18,12 +18,16 @@ SLIBS       += libs/liblbfgs/liblbfgs.a
 
 # USING ANN
 INCLUDES    += -Ilibs/ann_1.1.1/ANN
-SLIBS       += libs/ann_1.1.1/libann.a 
+SLIBS       += libs/ann_1.1.1/libann.a
 
 # USING OPENCV
 #INCLUDES    += `pkg-config --cflags opencv`
-CV_INC      := $(shell rospack cflags-only-I -q opencv2 | sed 's/ / -I/g;')
-CV_LIB      := $(shell rospack libs-only-l -q opencv2 | sed 's/ / -l/g;')
+#CV_INC      := $(shell rospack cflags-only-I -q opencv2 | sed 's/ / -I/g;')
+#CV_LIB      := $(shell rospack libs-only-l -q opencv2 | sed 's/ / -l/g;')
+#INCLUDES    += -I$(CV_INC)
+
+CV_INC      := `pkg-config --cflags opencv`
+CV_LIB      := `pkg-config --libs opencv`
 INCLUDES    += -I$(CV_INC)
 
 # Sources
@@ -35,16 +39,16 @@ SOURCES.hpp += $(SOURCES.ihpp:%=include/%)
 SOURCES.o   := $(shell cd src;     find -name "*.cpp" | cut -c 3- )
 SOURCES.o   := $(SOURCES.o:%.cpp=tmp/%.o)
 
-# Compiler flags 
+# Compiler flags
 CXX = g++
-CXXFLAGS += -O3 -Wall -march=native -mfpmath=sse -Isrc -Iinclude -funroll-loops -fopenmp 
-CXXFLAGS += -ffast-math -fno-trapping-math 
+CXXFLAGS += -O3 -Wall -march=native -mfpmath=sse -Isrc -Iinclude -funroll-loops -fopenmp
+CXXFLAGS += -ffast-math -fno-trapping-math
 
 CXXFLAGS += -g
 #CXXFLAGS += -DNDEBUG -fsingle-precision-constant
 
 
-# Targets 
+# Targets
 .PHONY: clean all libs $(LIBNAME)
 all : $(LIBNAME)
 
@@ -57,7 +61,7 @@ $(LIBNAME) : lib/$(LIBNAME).a
 
 $(SLIBS) : libs
 
-libs : 
+libs :
 	@cd libs; $(MAKE) --no-print-directory
 
 lib/$(LIBNAME).a : $(SOURCES.o) $(SLIBS)
@@ -76,4 +80,3 @@ clean:
 	$(RM) -r tmp
 	$(RM) -r lib
 	cd libs; $(MAKE) clean --no-print-directory
-

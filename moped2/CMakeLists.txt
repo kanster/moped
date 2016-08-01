@@ -29,18 +29,18 @@ target_link_libraries(moped2
 
 add_dependencies(moped2 BUILD_LIBMOPED)
 
-add_custom_command(TARGET moped2 PRE_BUILD COMMAND ./find_opencv2.sh WORKING_DIRECTORY ..)
+#add_custom_command(TARGET moped2 PRE_BUILD COMMAND ./find_opencv2.sh WORKING_DIRECTORY ..)
 
 
 
-rosbuild_add_executable(moped2_test moped_test.cpp)
+#rosbuild_add_executable(moped2_test moped_test.cpp)
 
-rosbuild_add_link_flags(moped2_test "-Wl,--start-group")
-rosbuild_add_compile_flags(moped2_test "-O3 -Wall -march=native -mfpmath=sse -fopenmp")
-target_link_libraries(moped2_test gomp GLEW glut IL ${PROJECT_SOURCE_DIR}/libmoped/lib/libmoped.a) 
-add_custom_command(TARGET moped2_test
-                   PRE_BUILD COMMAND ./find_opencv2.sh WORKING_DIRECTORY ..)
-add_dependencies(moped2_test BUILD_LIBMOPED)
+#rosbuild_add_link_flags(moped2_test "-Wl,--start-group")
+#rosbuild_add_compile_flags(moped2_test "-O3 -Wall -march=native -mfpmath=sse -fopenmp")
+#target_link_libraries(moped2_test gomp GLEW glut IL ${PROJECT_SOURCE_DIR}/libmoped/lib/libmoped.a)
+#add_custom_command(TARGET moped2_test
+#                   PRE_BUILD COMMAND ./find_opencv2.sh WORKING_DIRECTORY ..)
+#add_dependencies(moped2_test BUILD_LIBMOPED)
 
 #set the default path for built executables to the "bin" directory
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
